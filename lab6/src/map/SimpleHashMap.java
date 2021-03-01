@@ -3,59 +3,140 @@ package map;
 public class SimpleHashMap<K, V> implements Map<K, V> {
 	private int capacity;
 	private static final double loadFactor = 0.75;
-	private Entry<K,V> [] table;
+	private Entry<K, V>[] table;
 	private int size;
-	
-	public SimpleHashMap () {
+
+	public SimpleHashMap() {
 		capacity = 16;
-		table = (Entry<K,V>[]) new Entry[capacity];
-		
-	}
-	
-	public SimpleHashMap(int capacity) {
-		this.capacity = capacity;
-		table = (Entry<K,V>[]) new Entry[capacity];
+		table = (Entry<K, V>[]) new Entry[capacity];
+
 	}
 
-	
+	public SimpleHashMap(int capacity) {
+		this.capacity = capacity;
+		table = (Entry<K, V>[]) new Entry[capacity];
+	}
+
 	@Override
 	public V get(Object arg0) {
-		// TODO Auto-generated method stub
+		K key = (K) arg0;
+		Entry<K,V> temp = find(index(key), key);
+		if(temp != null) {
+			return temp.getValue();
+		}
 		return null;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		if (size == 0) {
-			return true;
-		}
-		return false;
+		return size == 0;
 	}
 
 	@Override
 	public V put(K arg0, V arg1) {
-		// TODO Auto-generated method stub
+		int index = index(arg0);
+		Entry<K,V> temp = find(index, arg0);
+		if (temp != null) {
+			V old = temp.getValue();
+			temp.setValue(arg1);
+			return old;
+		} else {
+			if (table[index] == null) {
+				table[index] = new Entry<K,V>(arg0, arg1);
+				size++;
+			} else {
+				temp = table[index];
+				while(temp.next != null) {
+					temp = temp.next;
+				}
+				temp.next = new Entry<K,V>(arg0, arg1);
+				size++;
+			}
+		}
+		if((size/capacity) > loadFactor) {
+			rehash();
+		} 
 		return null;
+	}
+	
+	private void rehash() {
+		int increase = capacity * 2;
+		Entry<K, V>[] temp = new Entry[increase];
+		Entry<K, V>[] old= table;
+		this.table = temp;
+		this.size = 0;
+		this.capacity = increase;
+		for (int i = 0; i < old.length; i++) {
+			Entry<K, V> e = old[i];
+			if (e != null) {
+				put(e.getKey(), e.getValue());
+				while (e.next != null) {
+					put(e.next.getKey(), e.next.getValue());
+					e = e.next;
+				}
+				
+			}
+		}
+		
 	}
 
 	@Override
 	public V remove(Object arg0) {
-		// TODO Auto-generated method stub
+		K key = (K) arg0;
+		if (!isEmpty()) {
+			Entry <K,V> temp = find(index(key), key);
+			Entry <K,V> atIndex = table[index(key)];
+			if (temp != null) {
+				V old = temp.getValue();
+				if (atIndex.equals(temp)) {
+					if (temp.next == null) {
+						table[index(key)] = null;
+					} else {
+						table[index(key)] = temp.next;
+					}
+					size--;
+					return old;
+				}
+				while (atIndex.next != null) {
+					if (atIndex.next.equals(temp)) {
+						atIndex.next = temp.next;
+						size--;
+						return old;
+					} else if (atIndex.next.next == null) {
+						atIndex.next = null;
+						size--;
+						return old;
+					} else {
+						atIndex = atIndex.next;
+					}
+				}
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public int size() {
 		return size;
-	} 
-	private int index (K key) {
-		return 0;
 	}
-	
-	private Entry<K,V> find (int index, K key){
+
+	private int index(K key) {
+		return Math.abs( key.hashCode() % capacity);
+	}
+
+	private Entry<K, V> find(int index, K key) {
+		if (table[index] != null) {
+			Entry<K, V> temp = table[index];
+			while (temp != null) {
+				if (temp.getKey().equals(key)) {
+					return temp;
+				}
+				temp = temp.next;
+			}
+		}
 		return null;
 	}
-	
+
 	public String show() {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < table.length; i++) {
@@ -74,22 +155,19 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
 		return sb.toString();
 	}
 
-	private static class Entry<K, V> implements Map.Entry<K,V> {
+	private static class Entry<K, V> implements Map.Entry<K, V> {
 		private K key;
 		private V value;
-		private Entry<K,V> next;
-		
-		public Entry (K key, V value) {
+		private Entry<K, V> next;
+
+		public Entry(K key, V value) {
 			this.key = key;
 			this.value = value;
-		}
-		public Entry<K,V> setNext(Entry<K,V> next){
-			return this.next = next;
 		}
 
 		@Override
 		public K getKey() {
-			return key;	
+			return key;
 		}
 
 		@Override
@@ -101,11 +179,22 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
 		public V setValue(V value) {
 			return this.value = value;
 		}
-		
-		public String toString () {
+
+		public String toString() {
 			return getKey() + "=" + getValue();
 		}
 
+	}
+	
+	public static void main(String[] args) {
+		SimpleHashMap<String, Integer> smh = new SimpleHashMap<String, Integer>();
+		smh.put("abc", 10);
+		smh.put("abc", 20);
+		smh.put("abc", 30);
+		smh.put("abc", 40);
+		smh.put("2", 10);
+		smh.put("2", 20);
+		System.out.print(smh.show() + "\n" + smh.size());
 	}
 
 }

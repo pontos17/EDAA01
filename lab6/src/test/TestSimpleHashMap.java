@@ -21,15 +21,16 @@ class TestSimpleHashMap {
 
 	@BeforeEach
 	void setUp() {
-//		m = new SimpleHashMap<Integer, Integer>(10);
-//		m16 = new SimpleHashMap<Integer, Integer>();
-//		s = new SimpleHashMap<String, Integer>();
+		m = new SimpleHashMap<Integer, Integer>(10);
+		m16 = new SimpleHashMap<Integer, Integer>();
+		s = new SimpleHashMap<String, Integer>();
 	}
 
 	@AfterEach
 	void tearDown() {
 		m = null;
 		m16 = null;
+		s=null;
 	}
 	
 	@Test
