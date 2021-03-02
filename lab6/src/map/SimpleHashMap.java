@@ -20,8 +20,8 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
 	@Override
 	public V get(Object arg0) {
 		K key = (K) arg0;
-		Entry<K,V> temp = find(index(key), key);
-		if(temp != null) {
+		Entry<K, V> temp = find(index(key), key);
+		if (temp != null) {
 			return temp.getValue();
 		}
 		return null;
@@ -35,34 +35,30 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
 	@Override
 	public V put(K arg0, V arg1) {
 		int index = index(arg0);
-		Entry<K,V> temp = find(index, arg0);
+		Entry<K, V> temp = find(index, arg0);
 		if (temp != null) {
-			V old = temp.getValue();
-			temp.setValue(arg1);
-			return old;
+			return temp.setValue(arg1);
 		} else {
 			if (table[index] == null) {
-				table[index] = new Entry<K,V>(arg0, arg1);
+				table[index] = new Entry<K, V>(arg0, arg1);
 				size++;
 			} else {
 				temp = table[index];
-				while(temp.next != null) {
-					temp = temp.next;
-				}
-				temp.next = new Entry<K,V>(arg0, arg1);
+				table[index] = new Entry<K, V>(arg0, arg1);
+				table[index].next = temp;
 				size++;
 			}
 		}
-		if((size/capacity) > loadFactor) {
+		if ((size / capacity) > loadFactor) {
 			rehash();
-		} 
+		}
 		return null;
 	}
-	
+
 	private void rehash() {
 		int increase = capacity * 2;
 		Entry<K, V>[] temp = new Entry[increase];
-		Entry<K, V>[] old= table;
+		Entry<K, V>[] old = table;
 		this.table = temp;
 		this.size = 0;
 		this.capacity = increase;
@@ -74,21 +70,21 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
 					put(e.next.getKey(), e.next.getValue());
 					e = e.next;
 				}
-				
+
 			}
 		}
-		
+
 	}
 
 	@Override
 	public V remove(Object arg0) {
 		K key = (K) arg0;
 		if (!isEmpty()) {
-			Entry <K,V> temp = find(index(key), key);
-			Entry <K,V> atIndex = table[index(key)];
+			Entry<K, V> temp = find(index(key), key);
+			Entry<K, V> atIndex = table[index(key)];
 			if (temp != null) {
 				V old = temp.getValue();
-				if (atIndex.equals(temp)) {
+				if (atIndex.getKey().equals(temp.getKey())) {
 					if (temp.next == null) {
 						table[index(key)] = null;
 					} else {
@@ -98,7 +94,7 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
 					return old;
 				}
 				while (atIndex.next != null) {
-					if (atIndex.next.equals(temp)) {
+					if (atIndex.next.getKey().equals(temp.getKey())) {
 						atIndex.next = temp.next;
 						size--;
 						return old;
@@ -121,7 +117,7 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
 	}
 
 	private int index(K key) {
-		return Math.abs( key.hashCode() % capacity);
+		return Math.abs(key.hashCode() % capacity);
 	}
 
 	private Entry<K, V> find(int index, K key) {
@@ -177,15 +173,19 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
 
 		@Override
 		public V setValue(V value) {
-			return this.value = value;
+			V old = this.value;
+			this.value = value;
+			return old;
 		}
 
 		public String toString() {
 			return getKey() + "=" + getValue();
 		}
+		
+	
 
 	}
-	
+
 	public static void main(String[] args) {
 		SimpleHashMap<String, Integer> smh = new SimpleHashMap<String, Integer>();
 		smh.put("abc", 10);

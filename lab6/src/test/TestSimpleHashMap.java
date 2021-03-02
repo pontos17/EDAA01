@@ -30,7 +30,6 @@ class TestSimpleHashMap {
 	void tearDown() {
 		m = null;
 		m16 = null;
-		s=null;
 	}
 	
 	@Test
